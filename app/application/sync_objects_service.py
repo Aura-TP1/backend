@@ -5,6 +5,9 @@ crudos (lo que se guarda en la columna BYTEA), y orquesta el repositorio.
 """
 
 import base64
+import binascii
+
+from fastapi import HTTPException, status
 
 from app.infrastructure.repositories.object_repository import ObjectRepository
 from app.interfaces.schemas.object_schemas import (
@@ -25,16 +28,30 @@ class SyncObjectsService:
         Devuelve la cantidad de objetos sincronizados.
         """
         for item in objects:
+            try:
+                embedding_bytes = base64.b64decode(item.embedding, validate=True)
+            except (binascii.Error, ValueError):
+                raise HTTPException(
+                    status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                    detail=f"El campo 'embedding' del objeto '{item.name}' no es base64 válido.",
+                )
+            try:
+                thumbnail_bytes = (
+                    base64.b64decode(item.thumbnail, validate=True)
+                    if item.thumbnail
+                    else None
+                )
+            except (binascii.Error, ValueError):
+                raise HTTPException(
+                    status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                    detail=f"El campo 'thumbnail' del objeto '{item.name}' no es base64 válido.",
+                )
             self.repository.upsert(
                 object_id=item.id,
                 google_user_id=google_user_id,
                 name=item.name,
-                embedding=base64.b64decode(item.embedding),
-                thumbnail=(
-                    base64.b64decode(item.thumbnail)
-                    if item.thumbnail
-                    else None
-                ),
+                embedding=embedding_bytes,
+                thumbnail=thumbnail_bytes,
                 created_at=item.created_at,
             )
         # Un único commit para toda la tanda.
