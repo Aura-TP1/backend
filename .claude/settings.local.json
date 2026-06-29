@@ -1,7 +1,10 @@
 {
   "permissions": {
     "allow": [
-      "Bash(python -m py_compile app/main.py app/domain/saved_object.py app/domain/user_settings.py app/infrastructure/database.py app/infrastructure/models.py app/infrastructure/repositories/object_repository.py app/infrastructure/repositories/settings_repository.py app/application/sync_objects_service.py app/application/sync_settings_service.py app/interfaces/dependencies.py app/interfaces/routers/sync_objects.py app/interfaces/routers/sync_settings.py app/interfaces/schemas/object_schemas.py app/interfaces/schemas/settings_schemas.py alembic/env.py alembic/versions/0001_initial_tables.py)"
+      "Bash(python -m py_compile app/main.py app/domain/saved_object.py app/domain/user_settings.py app/infrastructure/database.py app/infrastructure/models.py app/infrastructure/repositories/object_repository.py app/infrastructure/repositories/settings_repository.py app/application/sync_objects_service.py app/application/sync_settings_service.py app/interfaces/dependencies.py app/interfaces/routers/sync_objects.py app/interfaces/routers/sync_settings.py app/interfaces/schemas/object_schemas.py app/interfaces/schemas/settings_schemas.py alembic/env.py alembic/versions/0001_initial_tables.py)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)"
     ]
   }
 }
