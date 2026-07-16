@@ -37,7 +37,7 @@ class ObjectRepository:
         *,
         object_id: int,
         google_user_id: str,
-        name: str,
+        name: bytes,
         embedding: bytes,
         thumbnail: bytes | None,
         created_at,
@@ -72,6 +72,12 @@ class ObjectRepository:
         self.db.delete(obj)
         self.db.commit()
         return True
+
+    def delete_all_for_user(self, google_user_id: str) -> None:
+        """Purga todos los objetos del usuario (borrado total de cuenta)."""
+        self.db.query(SavedObjectModel).filter(
+            SavedObjectModel.google_user_id == google_user_id
+        ).delete()
 
     def commit(self) -> None:
         self.db.commit()

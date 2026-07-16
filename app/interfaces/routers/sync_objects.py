@@ -4,8 +4,12 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.application.sync_objects_service import SyncObjectsService
+from app.application.sync_settings_service import SyncSettingsService
 from app.infrastructure.database import get_db
 from app.infrastructure.repositories.object_repository import ObjectRepository
+from app.infrastructure.repositories.settings_repository import (
+    SettingsRepository,
+)
 from app.interfaces.dependencies import CurrentUser, get_current_user
 from app.interfaces.schemas.object_schemas import (
     SavedObjectResponse,
@@ -20,6 +24,10 @@ def _service(db: Session) -> SyncObjectsService:
     return SyncObjectsService(ObjectRepository(db))
 
 
+def _settings_service(db: Session) -> SyncSettingsService:
+    return SyncSettingsService(SettingsRepository(db))
+
+
 @router.post("/upload", response_model=UploadResult)
 def upload_objects(
     objects: list[SavedObjectUpload],
@@ -29,9 +37,11 @@ def upload_objects(
     """Recibe la lista de objetos del móvil y los guarda/actualiza.
 
     Operación idempotente: si un objeto ya existe (por id) se actualiza,
-    si no existe se crea.
+    si no existe se crea. Requiere consentimiento vigente
+    (ver POST /sync/consent) — devuelve 403 si no lo tiene.
     """
-    synced = _service(db).upload(user.google_user_id, objects)
+    has_consent = _settings_service(db).has_valid_consent(user.google_user_id)
+    synced = _service(db).upload(user.google_user_id, objects, has_consent=has_consent)
     return UploadResult(synced=synced)
 
 

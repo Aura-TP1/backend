@@ -9,3 +9,6 @@ requests
 python-dotenv
 pydantic
 pydantic[email]
+cryptography
+pytest
+httpx
